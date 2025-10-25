@@ -1,0 +1,10 @@
+/* src/index.css - Global styles */
+@import "tailwindcss";  /* Line 2: Imports Tailwind's base, components, and utilities. */
+
+/* Your existing styles (e.g., from Vite starter) */
+
+/* Optional: Custom styles below */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
