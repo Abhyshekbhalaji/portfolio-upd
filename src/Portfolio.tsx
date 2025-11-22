@@ -3,6 +3,7 @@ import { Moon, Sun, Github, Twitter, Linkedin, Mail, Code2, Award, Briefcase, Gr
 import * as THREE from 'three';
 import { gsap } from 'gsap';
 import type { LucideIcon } from 'lucide-react';
+import KeyboardScene from './components/KeyboardScene';
 interface SkeletonCardProps {
   className?: string;
 }
@@ -1000,77 +1001,85 @@ const Portfolio: React.FC = () => {
       </section>
 
       <section id="about" className="min-h-screen flex items-center px-6 py-20">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto w-full">
           <div className="flex items-center gap-3 mb-12">
             <User className={`w-8 h-8 ${isDark ? 'text-white' : 'text-gray-900'}`} />
             <h2 className="text-4xl md:text-5xl font-bold">About Me</h2>
           </div>
           
-          <div className="max-w-3xl mx-auto">
-            <div 
-              className={`p-8 rounded-3xl ${cardBg} backdrop-blur-lg border ${isDark ? 'border-gray-700 hover:border-gray-500' : 'border-blue-300 hover:border-blue-400'} shadow-lg relative overflow-hidden group`}
-              onMouseEnter={(e) => animateHover(e.currentTarget, true)}
-              onMouseLeave={(e) => animateHover(e.currentTarget, false)}
-            >
-              {/* Decorative gradient background */}
-              <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-20 ${isDark ? 'bg-cyan-500' : 'bg-blue-400'}`}></div>
-              
-              <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className={`p-3 rounded-xl ${isDark ? 'bg-cyan-500/20' : 'bg-blue-100'}`}>
-                    <GraduationCap className={`w-8 h-8 ${isDark ? 'text-cyan-400' : 'text-blue-600'}`} />
-                  </div>
-                  <h3 className="text-2xl font-bold">Education</h3>
-                </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            {/* About Me Content */}
+            <div>
+              <div 
+                className={`p-8 rounded-3xl ${cardBg} backdrop-blur-lg border ${isDark ? 'border-gray-700 hover:border-gray-500' : 'border-blue-300 hover:border-blue-400'} shadow-lg relative overflow-hidden group`}
+                onMouseEnter={(e) => animateHover(e.currentTarget, true)}
+                onMouseLeave={(e) => animateHover(e.currentTarget, false)}
+              >
+                {/* Decorative gradient background */}
+                <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-20 ${isDark ? 'bg-cyan-500' : 'bg-blue-400'}`}></div>
                 
-                <div className="space-y-6">
-                  <div className={`p-5 rounded-2xl ${isDark ? 'bg-gray-800/50 border border-gray-700' : 'bg-white/50 border border-blue-100'}`}>
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <p className={`font-bold text-xl mb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                          Bachelor of Technology
-                        </p>
-                        <p className={`text-lg font-semibold mb-2 ${isDark ? 'text-cyan-400' : 'text-blue-600'}`}>
-                          Biotechnology
-                        </p>
-                      </div>
-                      <div className={`px-3 py-1 rounded-full text-xs font-semibold ${isDark ? 'bg-cyan-500/20 text-cyan-300' : 'bg-blue-100 text-blue-700'}`}>
-                        2019-2023
-                      </div>
+                <div className="relative z-10">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className={`p-3 rounded-xl ${isDark ? 'bg-cyan-500/20' : 'bg-blue-100'}`}>
+                      <GraduationCap className={`w-8 h-8 ${isDark ? 'text-cyan-400' : 'text-blue-600'}`} />
                     </div>
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className={`w-1 h-1 rounded-full ${isDark ? 'bg-cyan-400' : 'bg-blue-500'}`}></div>
-                      <p className={`font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                        Sastra University
-                      </p>
-                    </div>
-                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                      Tanjore, Tamil Nadu, India
-                    </p>
+                    <h3 className="text-2xl font-bold">Education</h3>
                   </div>
                   
-                  <div className={`pt-5 border-t ${isDark ? 'border-gray-700' : 'border-blue-200'}`}>
-                    <p className={`font-semibold mb-3 flex items-center gap-2 ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>
-                      <Code2 className="w-4 h-4" />
-                      Relevant Coursework
-                    </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${isDark ? 'bg-gray-800/50' : 'bg-blue-50'}`}>
-                        <div className={`w-2 h-2 rounded-full ${isDark ? 'bg-cyan-400' : 'bg-blue-500'}`}></div>
-                        <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                          Data Structures & Algorithms (Java)
-                        </span>
+                  <div className="space-y-6">
+                    <div className={`p-5 rounded-2xl ${isDark ? 'bg-gray-800/50 border border-gray-700' : 'bg-white/50 border border-blue-100'}`}>
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <p className={`font-bold text-xl mb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                            Bachelor of Technology
+                          </p>
+                          <p className={`text-lg font-semibold mb-2 ${isDark ? 'text-cyan-400' : 'text-blue-600'}`}>
+                            Biotechnology
+                          </p>
+                        </div>
+                        <div className={`px-3 py-1 rounded-full text-xs font-semibold ${isDark ? 'bg-cyan-500/20 text-cyan-300' : 'bg-blue-100 text-blue-700'}`}>
+                          2019-2023
+                        </div>
                       </div>
-                      <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${isDark ? 'bg-gray-800/50' : 'bg-blue-50'}`}>
-                        <div className={`w-2 h-2 rounded-full ${isDark ? 'bg-cyan-400' : 'bg-blue-500'}`}></div>
-                        <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                          Python for Bio Engineers
-                        </span>
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className={`w-1 h-1 rounded-full ${isDark ? 'bg-cyan-400' : 'bg-blue-500'}`}></div>
+                        <p className={`font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                          Sastra University
+                        </p>
+                      </div>
+                      <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                        Tanjore, Tamil Nadu, India
+                      </p>
+                    </div>
+                    
+                    <div className={`pt-5 border-t ${isDark ? 'border-gray-700' : 'border-blue-200'}`}>
+                      <p className={`font-semibold mb-3 flex items-center gap-2 ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>
+                        <Code2 className="w-4 h-4" />
+                        Relevant Coursework
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${isDark ? 'bg-gray-800/50' : 'bg-blue-50'}`}>
+                          <div className={`w-2 h-2 rounded-full ${isDark ? 'bg-cyan-400' : 'bg-blue-500'}`}></div>
+                          <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                            Data Structures & Algorithms (Java)
+                          </span>
+                        </div>
+                        <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${isDark ? 'bg-gray-800/50' : 'bg-blue-50'}`}>
+                          <div className={`w-2 h-2 rounded-full ${isDark ? 'bg-cyan-400' : 'bg-blue-500'}`}></div>
+                          <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                            Python for Bio Engineers
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* 3D Keyboard Scene */}
+            <div className={`rounded-3xl z-50 ${cardBg} backdrop-blur-lg border ${isDark ? 'border-gray-700' : 'border-blue-300'} shadow-lg overflow-hidden h-[500px]`}>
+              <KeyboardScene isDark={isDark} />
             </div>
           </div>
         </div>
