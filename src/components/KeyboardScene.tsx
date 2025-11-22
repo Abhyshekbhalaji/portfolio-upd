@@ -7,244 +7,272 @@ interface KeyboardSceneProps {
 
 const KeyboardScene: React.FC<KeyboardSceneProps> = ({ isDark }) => {
   const mountRef = useRef<HTMLDivElement>(null);
-  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
-  const sceneRef = useRef<THREE.Scene | null>(null);
   const animationRef = useRef<number | null>(null);
-  const isInitializedRef = useRef(false);
 
   useEffect(() => {
-    if (!mountRef.current || isInitializedRef.current) return;
-    isInitializedRef.current = true;
+    if (!mountRef.current) return;
 
     const container = mountRef.current;
-    const width = container.clientWidth;
-    const height = container.clientHeight;
+    const width = container.clientWidth || 400;
+    const height = container.clientHeight || 400;
 
-    // Scene
+    // Scene setup
     const scene = new THREE.Scene();
-    sceneRef.current = scene;
 
     // Camera
-    const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
-    camera.position.set(0, 4, 9);
-    camera.lookAt(0, 0, 0);
+    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+    camera.position.set(0, 2.2, 5.5);
+    camera.lookAt(0, 0.6, 0);
 
     // Renderer
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setClearColor(0x000000, 0);
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    container.appendChild(renderer.domElement);
-    rendererRef.current = renderer;
-
-    // Lighting
-    scene.add(new THREE.AmbientLight(0xffffff, 0.4));
-
-    const mainLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    mainLight.position.set(5, 10, 7);
-    mainLight.castShadow = true;
-    scene.add(mainLight);
-
-    const accentLight1 = new THREE.PointLight(isDark ? 0x00ffff : 0x3b82f6, 1.5, 20);
-    accentLight1.position.set(4, 3, 4);
-    scene.add(accentLight1);
-
-    const accentLight2 = new THREE.PointLight(isDark ? 0xff00ff : 0x8b5cf6, 1, 20);
-    accentLight2.position.set(-4, 3, -2);
-    scene.add(accentLight2);
-
-    // Keyboard Base
-    const baseGeo = new THREE.BoxGeometry(9, 0.4, 3.5);
-    const baseMat = new THREE.MeshStandardMaterial({
-      color: isDark ? 0x1a1a2e : 0x2d3748,
-      metalness: 0.3,
-      roughness: 0.7,
+    const renderer = new THREE.WebGLRenderer({
+      alpha: true,
+      antialias: true,
     });
-    const base = new THREE.Mesh(baseGeo, baseMat);
-    base.position.y = -0.2;
-    base.receiveShadow = true;
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+    container.appendChild(renderer.domElement);
+
+    // Lights
+    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+    const directional = new THREE.DirectionalLight(0xffffff, 0.7);
+    directional.position.set(4, 5, 4);
+    scene.add(directional);
+
+    const accent1 = new THREE.PointLight(isDark ? 0x00ffff : 0x3b82f6, 1.5, 20);
+    accent1.position.set(3, 2, 4);
+    scene.add(accent1);
+
+    const accent2 = new THREE.PointLight(isDark ? 0xff00ff : 0x9333ea, 1.2, 20);
+    accent2.position.set(-3, 2, -3);
+    scene.add(accent2);
+
+    // Base
+    const base = new THREE.Mesh(
+      new THREE.BoxGeometry(9, 0.4, 3.5),
+      new THREE.MeshStandardMaterial({
+        color: isDark ? 0x10121a : 0xd0d4df,
+        roughness: 0.7,
+        metalness: 0.2,
+      })
+    );
+    base.position.set(0, -0.2, 0);
     scene.add(base);
 
     // LED Strip
-    const stripGeo = new THREE.BoxGeometry(9.1, 0.05, 0.1);
-    const stripMat = new THREE.MeshStandardMaterial({
-      color: isDark ? 0x00ffff : 0x3b82f6,
-      emissive: isDark ? 0x00ffff : 0x3b82f6,
-      emissiveIntensity: 0.5,
-    });
-    const strip = new THREE.Mesh(stripGeo, stripMat);
+    const strip = new THREE.Mesh(
+      new THREE.BoxGeometry(9.1, 0.05, 0.12),
+      new THREE.MeshStandardMaterial({
+        color: isDark ? 0x00ffff : 0x3b82f6,
+        emissive: isDark ? 0x00ffff : 0x3b82f6,
+        emissiveIntensity: 0.6,
+      })
+    );
     strip.position.set(0, 0.01, 1.7);
     scene.add(strip);
 
     // Keys
     const keys: THREE.Mesh[] = [];
     const keyGeo = new THREE.BoxGeometry(0.55, 0.35, 0.55);
-    const layout = [
-      { row: 0, keys: 14, offset: 0 },
-      { row: 1, keys: 13, offset: 0.3 },
-      { row: 2, keys: 12, offset: 0.5 },
-      { row: 3, keys: 11, offset: 0.8 },
+    const rows = [
+      { count: 14, offset: 0 },
+      { count: 13, offset: 0.3 },
+      { count: 12, offset: 0.5 },
+      { count: 11, offset: 0.8 },
     ];
 
-    layout.forEach(({ row, keys: keyCount, offset }) => {
-      for (let col = 0; col < keyCount; col++) {
-        const keyMat = new THREE.MeshStandardMaterial({
-          color: isDark ? 0x16213e : 0x4a5568,
-          metalness: 0.2,
+    rows.forEach((row, rowIndex) => {
+      for (let i = 0; i < row.count; i++) {
+        const mat = new THREE.MeshStandardMaterial({
+          color: isDark ? 0x151a2e : 0x4b5563,
           roughness: 0.8,
+          metalness: 0.2,
         });
-        const key = new THREE.Mesh(keyGeo, keyMat);
-        const startX = -(keyCount * 0.6) / 2 + offset;
-        key.position.x = startX + col * 0.6;
-        key.position.y = 0.18;
-        key.position.z = 1.2 - row * 0.7;
-        key.castShadow = true;
+
+        const key = new THREE.Mesh(keyGeo, mat);
+        const startX = -(row.count * 0.6) / 2 + row.offset;
+
+        key.position.set(startX + i * 0.6, 0.18, 1.2 - rowIndex * 0.7);
+
         key.userData = {
-          originalY: key.position.y,
+          originalY: 0.18,
           delay: Math.random() * Math.PI * 2,
           isPressed: false,
           pressTime: 0,
         };
+
         keys.push(key);
         scene.add(key);
       }
     });
 
     // Spacebar
-    const spaceGeo = new THREE.BoxGeometry(4, 0.3, 0.55);
-    const spaceMat = new THREE.MeshStandardMaterial({
-      color: isDark ? 0x16213e : 0x4a5568,
-      metalness: 0.2,
-      roughness: 0.8,
-    });
-    const spacebar = new THREE.Mesh(spaceGeo, spaceMat);
-    spacebar.position.set(0, 0.15, -1.2);
-    spacebar.castShadow = true;
-    spacebar.userData = { originalY: 0.15, delay: 0, isPressed: false, pressTime: 0 };
-    keys.push(spacebar);
-    scene.add(spacebar);
+    const space = new THREE.Mesh(
+      new THREE.BoxGeometry(4, 0.3, 0.55),
+      new THREE.MeshStandardMaterial({
+        color: isDark ? 0x151a2e : 0x4b5563,
+      })
+    );
+    space.position.set(0, 0.15, -1.2);
+    space.userData = {
+      originalY: 0.15,
+      delay: Math.random() * Math.PI,
+      isPressed: false,
+      pressTime: 0,
+    };
+    keys.push(space);
+    scene.add(space);
 
-    // Floating Symbols
+    // Floating symbols
     const symbols: THREE.Mesh[] = [];
-    const codeChars = ["</>", "{}", "()", "[];", "=>", "++", "&&", "||"];
-    const colors = isDark 
-      ? ["#00ffff", "#ff00ff", "#fbbf24", "#10b981", "#f472b6"]
-      : ["#3b82f6", "#8b5cf6", "#f59e0b", "#10b981", "#ec4899"];
+    const symbolsList = ["<>", "{}", "()", "=>", "</>", "++", "&&", "||"];
+    const symbolColors = isDark
+      ? ["#00ffff", "#ff00ff", "#10b981", "#f59e0b"]
+      : ["#3b82f6", "#9333ea", "#10b981", "#f59e0b"];
 
     for (let i = 0; i < 10; i++) {
       const canvas = document.createElement("canvas");
-      canvas.width = 128;
-      canvas.height = 128;
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        ctx.fillStyle = colors[i % colors.length];
-        ctx.font = "bold 64px monospace";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(codeChars[i % codeChars.length], 64, 64);
-      }
+      canvas.width = canvas.height = 128;
+      const ctx = canvas.getContext("2d")!;
+      // @ts-ignore
+      ctx.fillStyle = symbolColors[i % symbolColors.length];
+      ctx.font = "bold 64px monospace";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";      // @ts-ignore
+      ctx.fillText(symbolsList[i % symbolsList.length], 64, 64);
 
-      const texture = new THREE.CanvasTexture(canvas);
       const symMat = new THREE.MeshBasicMaterial({
-        map: texture,
+        map: new THREE.CanvasTexture(canvas),
         transparent: true,
-        opacity: 0.7,
-        side: THREE.DoubleSide,
+        opacity: 0.75,
       });
-      const symGeo = new THREE.PlaneGeometry(0.8, 0.8);
-      const symbol = new THREE.Mesh(symGeo, symMat);
+
+      const sym = new THREE.Mesh(
+        new THREE.PlaneGeometry(1, 1),
+        symMat
+      );
 
       const angle = (i / 10) * Math.PI * 2;
       const radius = 5 + Math.random() * 2;
-      symbol.position.set(Math.cos(angle) * radius, 1 + Math.random() * 3, Math.sin(angle) * radius - 2);
-      symbol.userData = { angle, radius, floatSpeed: 0.3 + Math.random() * 0.3, baseY: symbol.position.y };
-      symbols.push(symbol);
-      scene.add(symbol);
+
+      sym.userData = {
+        angle,
+        radius,
+        baseY: 1 + Math.random() * 2,
+        floatSpeed: 0.3 + Math.random() * 0.4,
+      };
+
+      sym.position.set(
+        Math.cos(angle) * radius,
+        sym.userData.baseY,
+        Math.sin(angle) * radius - 3
+      );
+
+      symbols.push(sym);
+      scene.add(sym);
     }
 
     // Particles
-    const particleGeo = new THREE.BufferGeometry();
-    const positions = new Float32Array(50 * 3);
-    for (let i = 0; i < 150; i += 3) {
-      positions[i] = (Math.random() - 0.5) * 15;
-      positions[i + 1] = Math.random() * 6;
-      positions[i + 2] = (Math.random() - 0.5) * 10;
+    const pGeo = new THREE.BufferGeometry();
+    const pCount = 120;
+    const pos = new Float32Array(pCount * 3);
+
+    for (let i = 0; i < pCount * 3; i += 3) {
+      pos[i] = (Math.random() - 0.5) * 15;
+      pos[i + 1] = Math.random() * 6;
+      pos[i + 2] = (Math.random() - 0.5) * 10;
     }
-    particleGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    const particleMat = new THREE.PointsMaterial({
+
+    pGeo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+
+    const pMat = new THREE.PointsMaterial({
       color: isDark ? 0x00ffff : 0x3b82f6,
       size: 0.05,
       transparent: true,
-      opacity: 0.6,
+      opacity: 0.7,
     });
-    const particles = new THREE.Points(particleGeo, particleMat);
+
+    const particles = new THREE.Points(pGeo, pMat);
     scene.add(particles);
 
     // Animation
     let time = 0;
-    let lastKeyPress = 0;
+    let lastPress = 0;
 
     const animate = () => {
       animationRef.current = requestAnimationFrame(animate);
       time += 0.016;
 
+      // Key animations
       keys.forEach((key) => {
-        const wave = Math.sin(time * 2 + key.userData.delay) * 0.015;
-        if (key.userData.isPressed) {
-          const elapsed = time - key.userData.pressTime;
+        const ud = key.userData;
+
+        // Press animation
+        if (ud.isPressed) {
+          const elapsed = time - ud.pressTime;
           if (elapsed < 0.15) {
-            key.position.y = key.userData.originalY - 0.08;
-            (key.material as THREE.MeshStandardMaterial).emissive = new THREE.Color(isDark ? 0x00ffff : 0x3b82f6);
-            (key.material as THREE.MeshStandardMaterial).emissiveIntensity = 0.8;
+            key.position.y = ud.originalY - 0.1;
+            const mat = key.material as THREE.MeshStandardMaterial;
+            mat.emissive.setHex(isDark ? 0x00ffff : 0x3b82f6);
+            mat.emissiveIntensity = 0.9;
           } else {
-            key.userData.isPressed = false;
-            (key.material as THREE.MeshStandardMaterial).emissive = new THREE.Color(0x000000);
-            (key.material as THREE.MeshStandardMaterial).emissiveIntensity = 0;
+            ud.isPressed = false;
+            const mat = key.material as THREE.MeshStandardMaterial;
+            mat.emissiveIntensity = 0;
           }
         } else {
-          key.position.y = key.userData.originalY + wave;
+          // Idle wave
+          key.position.y = ud.originalY + Math.sin(time * 3 + ud.delay) * 0.05;
         }
       });
 
-      if (time - lastKeyPress > 0.08 + Math.random() * 0.12) {
-        lastKeyPress = time;
-        const available = keys.filter(k => !k.userData.isPressed);
-        if (available.length > 0) {
-          const key = available[Math.floor(Math.random() * available.length)];
-          key.userData.isPressed = true;
-          key.userData.pressTime = time;
-        }
+      // Random key press
+      if (time - lastPress > 0.22) {
+        lastPress = time;
+        const k = keys[Math.floor(Math.random() * keys.length)];
+              // @ts-ignore
+        k.userData.isPressed = true;
+              // @ts-ignore
+        k.userData.pressTime = time;
       }
 
+      // Floating symbols
       symbols.forEach((sym) => {
-        sym.userData.angle += 0.003;
-        sym.position.x = Math.cos(sym.userData.angle) * sym.userData.radius;
-        sym.position.z = Math.sin(sym.userData.angle) * sym.userData.radius - 2;
-        sym.position.y = sym.userData.baseY + Math.sin(time * sym.userData.floatSpeed) * 0.5;
+        const ud = sym.userData;
+        ud.angle += 0.01;
+        sym.position.x = Math.cos(ud.angle) * ud.radius;
+        sym.position.z = Math.sin(ud.angle) * ud.radius - 2;
+        sym.position.y = ud.baseY + Math.sin(time * ud.floatSpeed) * 0.4;
+
         sym.lookAt(camera.position);
       });
 
-      const pos = particles.geometry.attributes.position.array as Float32Array;
-      for (let i = 1; i < pos.length; i += 3) {
-        pos[i] += 0.005;
-        if (pos[i] > 6) pos[i] = 0;
+      // Particle rising
+      if(!pGeo) return;
+      if(!pGeo.attributes)return ;
+      //@ts-ignore
+      const arr = pGeo?.attributes?.position.array as Float32Array;
+      for (let i = 1; i < arr.length; i += 3) {
+              // @ts-ignore
+        arr[i] += 0.02;
+              // @ts-ignore
+        if (arr[i] > 6) arr[i] = 0;
       }
-      particles.geometry.attributes.position.needsUpdate = true;
+      //@ts-ignore
+      pGeo.attributes.position.needsUpdate = true;
 
-      camera.position.x = Math.sin(time * 0.3) * 0.8;
-      camera.position.y = 4 + Math.cos(time * 0.2) * 0.3;
-      camera.lookAt(0, 0, 0);
-
-      accentLight1.position.x = 4 + Math.sin(time * 0.5) * 2;
-      accentLight2.position.x = -4 + Math.cos(time * 0.4) * 2;
+      // Camera subtle hover
+    camera.position.x = Math.sin(time * 0.2) * 0.3; 
+camera.position.y = 2.2 + Math.cos(time * 0.2) * 0.1;
+      camera.lookAt(0, 0.6, 0);
 
       renderer.render(scene, camera);
     };
 
     animate();
 
+    // Resize
     const handleResize = () => {
       if (!container) return;
       const w = container.clientWidth;
@@ -256,30 +284,13 @@ const KeyboardScene: React.FC<KeyboardSceneProps> = ({ isDark }) => {
 
     window.addEventListener("resize", handleResize);
 
+    // Cleanup
     return () => {
       window.removeEventListener("resize", handleResize);
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-      isInitializedRef.current = false;
-      
-      // Safe cleanup
-      if (renderer.domElement && renderer.domElement.parentNode === container) {
-        container.removeChild(renderer.domElement);
-      }
-      
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
       renderer.dispose();
-      scene.traverse((obj: any) => {
-        if (obj.geometry) obj.geometry.dispose();
-        if (obj.material) {
-          if (Array.isArray(obj.material)) {
-            obj.material.forEach((m: any) => m.dispose());
-          } else {
-            if (obj.material.map) obj.material.map.dispose();
-            obj.material.dispose();
-          }
-        }
-      });
+      scene.clear();
+      renderer.domElement.remove();
     };
   }, [isDark]);
 
@@ -287,10 +298,10 @@ const KeyboardScene: React.FC<KeyboardSceneProps> = ({ isDark }) => {
     <div
       ref={mountRef}
       className="w-full h-full min-h-[400px] rounded-2xl overflow-hidden"
-      style={{ 
-        background: isDark 
-          ? "linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 100%)" 
-          : "linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)" 
+      style={{
+        background: isDark
+          ? "linear-gradient(135deg,#0a0a1a,#1a1a3e)"
+          : "linear-gradient(135deg,#dbeafe,#bfdbfe)",
       }}
     />
   );
